@@ -2,11 +2,24 @@
 /*
  * Plugin Name: Qty Increment Buttons for WooCommerce
  * Description: Adds professionally looking "-" and "+" buttons around product quantity field, on product and cart page.
- * Version: 2.7.5
- * Author: taisho
+ * Version: 2.8.0
+ * Author: taisho, Blaze Commerce
+ * Author URI: https://blazecommerce.io
+ * Requires at least: 4.6
+ * Requires PHP: 5.6
  * WC requires at least: 3.0.0
- * WC tested up to: 4.4.1
+ * WC tested up to: 11.0
+ * License: GPLv3
+ * License URI: http://www.gnu.org/licenses/gpl-3.0.html
+ * Text Domain: qty-increment-buttons-for-woocommerce
  */
+
+// Declare WooCommerce HPOS (custom order tables) compatibility. This plugin does not touch orders.
+add_action( 'before_woocommerce_init', function() {
+	if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+	}
+} );
  
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) die;
@@ -16,8 +29,8 @@ function qib_activate() {
 	// Prevent plugin activation if the minimum PHP version requirement is not met.
 	if ( version_compare( PHP_VERSION, '5.4', '<' ) ) {
 		deactivate_plugins( basename( __FILE__ ) );
-		$msg = '<p><strong>Qty Increment Buttons for WooCommerce</strong> requires PHP version 5.4 or greater. Your server runs ' . PHP_VERSION . '.</p>';
-		wp_die( $msg, 'Plugin Activation Error',  array( 'response' => 200, 'back_link' => TRUE ) );
+		$msg = '<p><strong>Qty Increment Buttons for WooCommerce</strong> requires PHP version 5.4 or greater. Your server runs ' . esc_html( PHP_VERSION ) . '.</p>';
+		wp_die( wp_kses_post( $msg ), 'Plugin Activation Error', array( 'response' => 200, 'back_link' => TRUE ) );
 	}
 	// Store time of first plugin activation (add_option does nothing if the option already exists).
 	add_option( 'qib_first_activate', time());
@@ -135,7 +148,7 @@ class qib_settings {
 	
 	public function add_settings_link( $links ) {
 		$links = array_merge( [
-			'<a href="' . esc_url( admin_url( '/options-general.php?page=' . $this->settings_page_name ) ) . '">' . __( 'Settings' ) . '</a>'
+			'<a href="' . esc_url( admin_url( '/options-general.php?page=' . $this->settings_page_name ) ) . '">' . esc_html__( 'Settings' ) /* phpcs:ignore WordPress.WP.I18n.MissingArgDomain -- WordPress core string. */ . '</a>'
 		], $links );
 		return $links;
 	}
@@ -145,7 +158,7 @@ class qib_settings {
 			return;
 		$plugin_slug = 'qty-increment-buttons-for-woocommerce';
 		$plugin_short_slug = 'qty-increment-buttons';	
-		wp_enqueue_script( $plugin_short_slug . '-admin', plugins_url() . '/' . $plugin_slug . '/js/' . $plugin_slug . '-admin' . '.js', [ 'jquery' ], '', true );	
+		wp_enqueue_script( $plugin_short_slug . '-admin', plugins_url() . '/' . $plugin_slug . '/js/' . $plugin_slug . '-admin' . '.js', [ 'jquery' ], '2.8.0', true );	
 	}
 	
 	/**
@@ -263,10 +276,10 @@ class qib_settings {
 					</fieldset>';			
 
 				printf (
-					$fieldset,
+					$fieldset, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup template, all values escaped below.
 					esc_attr( $field ),
 					isset( $this->options[$field] ) && ( 1 == $this->options[$field] )  ? 'checked="checked" ':'',
-					$this->settings_list[$field]['descr']
+					wp_kses_post( $this->settings_list[$field]['descr'] )
 				);			
 				break;
 				
@@ -304,10 +317,10 @@ class qib_settings {
 				$descr = isset ( $this->settings_list[$field]['descr'] ) ? $this->settings_list[$field]['descr'] : '';
 			
 				printf (
-					$fieldset,
+					$fieldset, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup template, all values escaped below.
 					esc_attr( $field ),
 					isset( $this->options[$field] ) ? esc_attr( $this->options[$field]) : '',
-					$descr
+					wp_kses_post( $descr )
 				);			
 				break;
 		}	
@@ -381,7 +394,7 @@ if( is_admin() ) {
 		}
 		';	
 		
-		echo '<style>' . qib_minify($my_style) . '</style>';
+		echo '<style>' . wp_strip_all_tags( qib_minify( $my_style ) ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS assembled from sanitized numeric/color options; tags stripped.
 		
 	}
 
@@ -804,7 +817,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 		}
 		";
 	
-		echo '<style>' . qib_minify($my_style) . '</style>';
+		echo '<style>' . wp_strip_all_tags( qib_minify( $my_style ) ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS assembled from sanitized numeric/color options; tags stripped.
 	
 	}
 }

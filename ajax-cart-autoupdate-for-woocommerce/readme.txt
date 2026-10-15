@@ -1,11 +1,11 @@
 === Ajax Cart AutoUpdate for WooCommerce ===
-Contributors: taisho
+Contributors: taisho, blazecommerce
 Tags: woocommerce,ajax,cart,update,autoupdate,quantity,auto-update,refresh,qty,basket,notices
 Donate link: https://www.paypal.me/TaishoDev/usd
 Requires at least: 4.6
-Tested up to: 5.7
-Requires PHP: 5.4
-Stable tag: 1.5.5
+Tested up to: 7.1
+Requires PHP: 5.6
+Stable tag: 1.6.0
 License: GPLv3
 License URL: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -63,6 +63,12 @@ Currently, it's not possible. Removing cart page notices is only an addition to 
 Very little, it's a small plugin that executes only on the cart page.
 
 == Changelog ==
+
+= 1.6.0 =
+* Compatibility update prepared by Blaze Commerce (blazecommerce). Original author: taisho.
+* Compatibility: tested up to WordPress 7.1 and WooCommerce 11.0.
+* Declared WooCommerce HPOS (custom order tables) compatibility.
+* No functional changes.
 
 = 1.5.5 =
 * Tested for compatibility with WordPress 5.7 and WooCommerce 5.1.

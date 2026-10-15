@@ -2,11 +2,24 @@
 /*
  * Plugin Name: Ajax Cart AutoUpdate for WooCommerce
  * Description: Automatically updates cart page and mini cart when quantity is changed. Optionally turns off cart page notices.
- * Version: 1.5.5
- * Author: taisho
+ * Version: 1.6.0
+ * Author: taisho, Blaze Commerce
+ * Author URI: https://blazecommerce.io
+ * Requires at least: 4.6
+ * Requires PHP: 5.6
  * WC requires at least: 3.0.0
- * WC tested up to: 5.1.0
+ * WC tested up to: 11.0
+ * License: GPLv3
+ * License URI: http://www.gnu.org/licenses/gpl-3.0.html
+ * Text Domain: ajax-cart-autoupdate-for-woocommerce
  */
+
+// Declare WooCommerce HPOS (custom order tables) compatibility. This plugin does not touch orders.
+add_action( 'before_woocommerce_init', function() {
+	if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+	}
+} );
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) die;
@@ -16,8 +29,8 @@ function acau_activate() {
 	// Prevent plugin activation if the minimum PHP version requirement is not met.
 	if ( version_compare( PHP_VERSION, '5.4', '<' ) ) {
 		deactivate_plugins( basename( __FILE__ ) );
-		$msg = '<p><strong>Ajax Cart AutoUpdate for WooCommerce</strong> requires PHP version 5.4 or greater. Your server runs ' . PHP_VERSION . '.</p>';
-		wp_die( $msg, 'Plugin Activation Error',  array( 'response' => 200, 'back_link' => TRUE ) );
+		$msg = '<p><strong>Ajax Cart AutoUpdate for WooCommerce</strong> requires PHP version 5.4 or greater. Your server runs ' . esc_html( PHP_VERSION ) . '.</p>';
+		wp_die( wp_kses_post( $msg ), 'Plugin Activation Error', array( 'response' => 200, 'back_link' => TRUE ) );
 	}
 	// Store time of first plugin activation (add_option does nothing if the option already exists).
 	add_option( 'acau_first_activate', time());
@@ -110,7 +123,7 @@ class acau_settings {
 	
 	public function add_settings_link( $links ) {
 		$links = array_merge( [
-			'<a href="' . esc_url( admin_url( '/options-general.php?page=' . $this->settings_page_name ) ) . '">' . __( 'Settings' ) . '</a>'
+			'<a href="' . esc_url( admin_url( '/options-general.php?page=' . $this->settings_page_name ) ) . '">' . esc_html__( 'Settings' ) /* phpcs:ignore WordPress.WP.I18n.MissingArgDomain -- WordPress core string. */ . '</a>'
 		], $links );
 		return $links;
 	}
@@ -121,7 +134,7 @@ class acau_settings {
 		$plugin_slug = 'ajax-cart-autoupdate-for-woocommerce';
 		$plugin_short_slug = 'ajax-cart-autoupdate';
 		wp_enqueue_style( 'wp-color-picker' );	
-		wp_enqueue_script( $plugin_short_slug . '-admin', plugins_url() . '/' . $plugin_slug . '/js/' . $plugin_slug . '-admin' . '.js', [ 'wp-color-picker', 'jquery' ], '', true );	
+		wp_enqueue_script( $plugin_short_slug . '-admin', plugins_url() . '/' . $plugin_slug . '/js/' . $plugin_slug . '-admin' . '.js', [ 'wp-color-picker', 'jquery' ], '1.6.0', true );	
 	}
 	
 	/**
@@ -234,11 +247,11 @@ class acau_settings {
 				$info = isset ( $this->settings_list[$field]['info'] ) ? $this->settings_list[$field]['info'] : '';
 
 				printf (
-					$fieldset,
+					$fieldset, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup template, values escaped below.
 					esc_attr( $field ),
 					isset( $this->options[$field] ) && ( 1 == $this->options[$field] )  ? 'checked="checked" ':'',
-					$this->settings_list[$field]['descr'],
-					$info
+					wp_kses_post( $this->settings_list[$field]['descr'] ),
+					wp_kses_post( $info )
 				);			
 				break;
 		
@@ -250,10 +263,10 @@ class acau_settings {
 				$descr = isset ( $this->settings_list[$field]['descr'] ) ? $this->settings_list[$field]['descr'] : '';
 			
 				printf (
-					$fieldset,
+					$fieldset, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup template, values escaped below.
 					esc_attr( $field ),
 					isset( $this->options[$field] ) ? esc_attr( $this->options[$field]) : '',
-					$descr
+					wp_kses_post( $descr )
 				);			
 				break;
 				
@@ -263,11 +276,11 @@ class acau_settings {
 				$fieldset .= isset ( $this->settings_list[$field]['descr'] ) ? '<p class="description">%3$s</p>' : '';	
 				$descr = isset ( $this->settings_list[$field]['descr'] ) ? $this->settings_list[$field]['descr'] : '';
 				
-				printf(
-					$fieldset,
+				printf (
+					$fieldset, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup template, values escaped below.
 					esc_attr( $field ),
 					isset( $this->options[$field] ) ? esc_attr( $this->options[$field]) : '',
-					$descr
+					wp_kses_post( $descr )
 				);
 		}	
 	
@@ -309,7 +322,7 @@ if( is_admin() ) {
 		}		
 		";
 		
-		echo '<style>' . acau_minify($my_style) . '</style>';
+		echo '<style>' . wp_strip_all_tags( acau_minify( $my_style ) ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS assembled from sanitized numeric/color options; tags stripped.
 		
 	}
 
@@ -366,7 +379,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 			color: " . $args['spinning_wheel_color'] . ";
 		}" : "");
 		
-		echo '<style>' . acau_minify($my_style) . '</style>';
+		echo '<style>' . wp_strip_all_tags( acau_minify( $my_style ) ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- CSS assembled from sanitized numeric/color options; tags stripped.
 	}
 	
 	function acau_enqueue_script( $args ) {

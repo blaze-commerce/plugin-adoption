@@ -1,11 +1,11 @@
 === Qty Increment Buttons for WooCommerce ===
-Contributors: taisho
+Contributors: taisho, blazecommerce
 Tags: woocommerce,quantity,increment,buttons,qty
 Donate link: https://www.paypal.me/TaishoDev/usd
 Requires at least: 4.6
-Tested up to: 5.5
-Requires PHP: 5.4
-Stable tag: 2.7.5
+Tested up to: 7.1
+Requires PHP: 5.6
+Stable tag: 2.8.0
 License: GPLv3
 License URL: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -63,6 +63,12 @@ While very flexible in theme support, this plugin can't handle all custom layout
 Very little, it's a small plugin that executes only on product, cart, checkout, shop and category pages, unless an option to load the plugin on all pages is checked. CSS in the head is minified.
 
 == Changelog ==
+
+= 2.8.0 =
+* Compatibility update prepared by Blaze Commerce (blazecommerce). Original author: taisho.
+* Compatibility: tested up to WordPress 7.1 and WooCommerce 11.0.
+* Declared WooCommerce HPOS (custom order tables) compatibility.
+* No functional changes.
 
 = 2.7.5 =
 * Hotfixed an issue from 2.7.4 release that caused quantity buttons used by some themes to be visible and appear next to the plugin buttons.

@@ -107,7 +107,7 @@ class qib_notice {
 		}
 		";
 		
-		echo '<style>' . $my_style . '</style>';
+		echo '<style>' . wp_strip_all_tags( $my_style ) . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static CSS string, tags stripped.
 	}
 	
 }
