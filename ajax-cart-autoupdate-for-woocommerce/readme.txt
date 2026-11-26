@@ -3,7 +3,7 @@ Contributors: taisho, blazecommerce
 Tags: woocommerce,ajax,cart,update,autoupdate,quantity,auto-update,refresh,qty,basket,notices
 Donate link: https://www.paypal.me/TaishoDev/usd
 Requires at least: 4.6
-Tested up to: 7.1
+Tested up to: 7.2
 Requires PHP: 5.6
 Stable tag: 1.6.0
 License: GPLv3
@@ -66,17 +66,18 @@ Very little, it's a small plugin that executes only on the cart page.
 
 = 1.6.0 =
 * Compatibility update prepared by Blaze Commerce (blazecommerce). Original author: taisho.
-* Compatibility: tested up to WordPress 7.1 and WooCommerce 11.0.
+* Tested up to WordPress 7.2 and WooCommerce 11.3.
 * Declared WooCommerce HPOS (custom order tables) compatibility.
-* No functional changes.
+* Fixed PHP 8.1 and 8.2+ deprecation notices.
+* Fixed the "translation loading was triggered too early" notice on WordPress 6.7+.
+* Replaced wc_enqueue_js(), deprecated since WooCommerce 10.4.
+* Output escaping, and a nonce and capability check on the rating notice dismiss request.
+* No change to settings or front-end behaviour.
 
 = 1.5.5 =
 * Tested for compatibility with WordPress 5.7 and WooCommerce 5.1.
 * Replaced deprecated jQuery code in admin panel that generated a notice in console.
 * New setting - enable the plugin on the checkout page. Disabled by default. Use only if the checkout has a regular cart page embedded.
-
-https://wordpress.org/support/topic/req-please-add-an-option-to-enable-the-checkout-page-as-well/#post-12673844
-this looks quite good and simple compared to full-scale checkout page reworks. I will add an option in settings to run this plugin additionally on checkout in the next version, unchecked by default and informing the users that it's only for the standard cart page combined with the checkout.
 
 = 1.5.4 =
 * Added info about compatibility with PHP 7.4.

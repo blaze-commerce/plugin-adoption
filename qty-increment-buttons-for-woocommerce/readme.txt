@@ -3,7 +3,7 @@ Contributors: taisho, blazecommerce
 Tags: woocommerce,quantity,increment,buttons,qty
 Donate link: https://www.paypal.me/TaishoDev/usd
 Requires at least: 4.6
-Tested up to: 7.1
+Tested up to: 7.2
 Requires PHP: 5.6
 Stable tag: 2.8.0
 License: GPLv3
@@ -66,9 +66,13 @@ Very little, it's a small plugin that executes only on product, cart, checkout, 
 
 = 2.8.0 =
 * Compatibility update prepared by Blaze Commerce (blazecommerce). Original author: taisho.
-* Compatibility: tested up to WordPress 7.1 and WooCommerce 11.0.
+* Tested up to WordPress 7.2 and WooCommerce 11.3.
 * Declared WooCommerce HPOS (custom order tables) compatibility.
-* No functional changes.
+* Fixed PHP 8.1 and 8.2+ deprecation notices.
+* Fixed the "translation loading was triggered too early" notice on WordPress 6.7+.
+* Replaced wc_enqueue_js(), deprecated since WooCommerce 10.4.
+* Output escaping, and a nonce and capability check on the rating notice dismiss request.
+* No change to settings or front-end behaviour.
 
 = 2.7.5 =
 * Hotfixed an issue from 2.7.4 release that caused quantity buttons used by some themes to be visible and appear next to the plugin buttons.
