@@ -439,7 +439,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	
 		// Apply plugin styles through CSS in page head.
 		add_action( 'wp_head', function() use ( $args ) { qib_apply_styles( $args ); } );
-		// Enqueue js script inline using wc_enqueue_js to make the buttons actually work.
+		// Enqueue js script inline to make the buttons actually work.
 		add_action( 'template_redirect', 'qib_enqueue_script' );
 		
 		// Handle archive display options.
@@ -496,7 +496,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 
 	function qib_add_to_cart_quantity_handler() {
 		
-		wc_enqueue_js( '
+		qib_enqueue_js( '
 		
 			jQuery(document).on( "click", ".quantity input", function() {
 				return false;
@@ -588,7 +588,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 		
 		$quantity_change = apply_filters( 'qib_change_quantity_change', $quantity_change);		
 	
-		wc_enqueue_js( $event_listeners .		
+		qib_enqueue_js( $event_listeners .		
 			
 			'
 			function QtyChng() {
@@ -846,4 +846,12 @@ function qib_minify( $input ) {
 	// $output = preg_replace('#/\*.*?\*/#s', '', $output);
 	$output = preg_replace('/(?:(?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:(?<!\:|\\\|\')\/\/.*))/', '', $output);
 	return $output;
+}
+
+// Print inline JavaScript in the footer, after jQuery, inside jQuery(function($) { ... }).
+// Replaces wc_enqueue_js(), which is deprecated since WooCommerce 10.4.
+function qib_enqueue_js( $code ) {
+	wp_register_script( 'qty-increment-buttons', false, [ 'jquery' ], '2.8.0', true );
+	wp_enqueue_script( 'qty-increment-buttons' );
+	wp_add_inline_script( 'qty-increment-buttons', 'jQuery(function($) {' . $code . '});' );
 }

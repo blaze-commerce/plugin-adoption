@@ -358,7 +358,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	
 		if ( ! is_cart() && ! ( is_checkout() && 1 == $args['enable_on_checkout'] ) ) return; // Only if it's a cart page or checkout page with the corresponding setting selected
 		
-		// Enqueue js script inline using wc_enqueue_js.
+		// Enqueue js script inline.
 		add_action( 'template_redirect', function() use ( $args ) { acau_enqueue_script ( $args ); }, 20);
 		
 		/*don't display default "Update cart" button, its behavior can still be triggered automatically,
@@ -398,7 +398,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	
 	function acau_enqueue_script( $args ) {
 		
-		wc_enqueue_js( '
+		acau_enqueue_js( '
 		
 			var timeout;
 
@@ -430,4 +430,12 @@ function acau_minify( $input ) {
 	// $output = preg_replace('#/\*.*?\*/#s', '', $output);
 	$output = preg_replace('/(?:(?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:(?<!\:|\\\|\')\/\/.*))/', '', $output);
 	return $output;
+}
+
+// Print inline JavaScript in the footer, after jQuery, inside jQuery(function($) { ... }).
+// Replaces wc_enqueue_js(), which is deprecated since WooCommerce 10.4.
+function acau_enqueue_js( $code ) {
+	wp_register_script( 'ajax-cart-autoupdate', false, [ 'jquery' ], '1.6.0', true );
+	wp_enqueue_script( 'ajax-cart-autoupdate' );
+	wp_add_inline_script( 'ajax-cart-autoupdate', 'jQuery(function($) {' . $code . '});' );
 }
