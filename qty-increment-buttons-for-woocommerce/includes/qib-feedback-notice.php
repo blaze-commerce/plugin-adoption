@@ -26,8 +26,8 @@ class qib_notice {
 	
 	public function qib_feedback_notice() {
 		
-		// Return if already dismissed.
-		if ( $this->dismiss_notice ) return false;
+		// Return if already dismissed, or if the user cannot manage options (and so cannot dismiss it).
+		if ( $this->dismiss_notice || ! current_user_can( 'manage_options' ) ) return false;
 		
 		$now = time();
 		
@@ -43,7 +43,8 @@ class qib_notice {
 			jQuery(function($){
 				$(document).on( 'click', '#qib_notice_container a', function() {
 					var data = {
-						action: 'qib_notice_dismiss'                           
+						action: 'qib_notice_dismiss',
+						_ajax_nonce: '<?php echo esc_js( wp_create_nonce( 'qib_notice_dismiss' ) ); ?>'                           
 					};
 					$.post(ajaxurl, data, function(response ) {
 						$('#qib_notice_container').fadeOut('slow');
@@ -79,6 +80,10 @@ class qib_notice {
 	}
 	
 	public function qib_notice_dismiss() {		
+		check_ajax_referer( 'qib_notice_dismiss' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( -1, 403 );
+		}
 		update_option( 'qib_dismiss_notice', true );	
 		wp_die();
 	}

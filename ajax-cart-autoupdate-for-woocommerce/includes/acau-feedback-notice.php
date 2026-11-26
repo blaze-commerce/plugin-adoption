@@ -26,8 +26,8 @@ class acau_notice {
 	
 	public function acau_feedback_notice() {
 		
-		// Return if already dismissed.
-		if ( $this->dismiss_notice ) return false;
+		// Return if already dismissed, or if the user cannot manage options (and so cannot dismiss it).
+		if ( $this->dismiss_notice || ! current_user_can( 'manage_options' ) ) return false;
 		
 		$now = time();
 		
@@ -43,7 +43,8 @@ class acau_notice {
 			jQuery(function($){
 				$(document).on( 'click', '#acau_notice_container a', function() {
 					var data = {
-						action: 'acau_notice_dismiss'                           
+						action: 'acau_notice_dismiss',
+						_ajax_nonce: '<?php echo esc_js( wp_create_nonce( 'acau_notice_dismiss' ) ); ?>'                           
 					};
 					$.post(ajaxurl, data, function(response ) {
 						$('#acau_notice_container').fadeOut('slow');
@@ -79,6 +80,10 @@ class acau_notice {
 	}
 	
 	public function acau_notice_dismiss() {		
+		check_ajax_referer( 'acau_notice_dismiss' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( -1, 403 );
+		}
 		update_option( 'acau_dismiss_notice', true );	
 		wp_die();
 	}
