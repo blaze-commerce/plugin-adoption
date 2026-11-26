@@ -42,6 +42,9 @@ class qib_settings {
 	private $options;	
 	private $settings_page_name;
 	private $settings_menu_name;
+	// Declared for PHP 8.2+, which deprecates dynamic properties.
+	public $plugin_hook_suffix;
+	public $settings_list;
 
     public function __construct() {
 		
@@ -63,6 +66,15 @@ class qib_settings {
 			
 		}
 		
+	}
+
+	/**
+	 * Settings definitions and defaults. Built on first use, after init, so translations load at the right time (WordPress 6.7+).
+	 */
+	public function get_settings_list() {
+		if ( null !== $this->settings_list ) {
+			return $this->settings_list;
+		}
 		$this->settings_list = [
 			
 			'qib_all_pages' 			=> [ 'val' => false, 	'title' => __( 'Load on all pages', 'qty-increment-buttons-for-woocommerce' ), 	'type' => 'checkbox', 	'tab' => 'configuration',
@@ -102,6 +114,7 @@ class qib_settings {
 											 'descr' => __( 'Recommended 35-50 pixels.', 'qty-increment-buttons-for-woocommerce' ),
 											 'arg' => [ 'class' => 'qib_sizes' ] ],
 		];
+		return $this->settings_list;
 	}
 	   
 	public function display_options() {
@@ -114,7 +127,7 @@ class qib_settings {
         add_settings_section( 'configuration_section', null, [ $this, 'print_section_info' ], $this->settings_page_name );
 		
 		// Add setting fields from 'settings_list' array based on an active tab.
-		$arr = $this->settings_list;
+		$arr = $this->get_settings_list();
 		foreach($arr as $key => $item) {
 			if ( $active_tab == $arr[$key]['tab']  ) {
 				
@@ -168,7 +181,7 @@ class qib_settings {
 	 */
 	public function qib_get_settings( $index = false ) {
 		
-		$arr = $this->settings_list;
+		$arr = $this->get_settings_list();
 		foreach($arr as $key => $item) {
 			$defaults[$key] = $arr[$key]['val'];
 		}
@@ -223,7 +236,7 @@ class qib_settings {
     public function sanitize( $input ) {
 		
 		$new_input = $this->qib_get_settings();
-		$arr = $this->settings_list;	
+		$arr = $this->get_settings_list();	
 		
 		foreach($arr as $key => $item) {		
 			switch ( $arr[$key]['type'] ) {
@@ -265,6 +278,7 @@ class qib_settings {
 	public function qib_print_field(array $args) {
 		 
 		$field = $args['name'];
+		$this->get_settings_list();
 	
 		switch ( $this->settings_list[$field]['type'] ) {
 			
@@ -405,17 +419,17 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 		
 	// Remove plugin prefix and dash "_" from argument keys.
 	function qib_replaceArrayKeys( $array ) {
-		$replacedKeys = str_replace('qib_', null, array_keys( $array ));
+		$replacedKeys = str_replace('qib_', '', array_keys( $array ));
 		return array_combine( $replacedKeys, $array );
 	}	
-	$args = qib_replaceArrayKeys ( $qib_settingz_page->qib_get_settings() );
 	
 	// Override template 'woocommerce/templates/global/quantity-input.php' that is used to create WooCommerce quantity field. Adds plain quantity buttons.
 	// Needs to be outside the template_redirect to work with AJAX of Quick View plugins.
 	// The template file can be replaced through filter. More details in \template\global\quantity-input.php.
 	add_filter('woocommerce_locate_template', 'qib_override_default_template', 9999, 3);
 	// Run plugin.
-	add_action('template_redirect', function() use ( $args ) { qty_increment_buttons( $args ); }, 1);
+	// Settings are read here, after init, so translations load at the right time (WordPress 6.7+).
+	add_action('template_redirect', function() use ( $qib_settingz_page ) { qty_increment_buttons( qib_replaceArrayKeys( $qib_settingz_page->qib_get_settings() ) ); }, 1);
 	function qty_increment_buttons( $args ) {
 		
 		if ( $args['all_pages'] != 1 ) {			

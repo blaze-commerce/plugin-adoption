@@ -6,6 +6,9 @@ if ( ! defined( 'WPINC' ) ) die;
 // Create feedback notice class.
 class acau_notice {
 
+	// Declared for PHP 8.2+, which deprecates dynamic properties.
+	public $dismiss_notice;
+
 	public function __construct() {
 		
 		$this->dismiss_notice = get_option( 'acau_dismiss_notice', false );

@@ -42,6 +42,9 @@ class acau_settings {
 	private $options;	
 	private $settings_page_name;
 	private $settings_menu_name;
+	// Declared for PHP 8.2+, which deprecates dynamic properties.
+	public $plugin_hook_suffix;
+	public $settings_list;
 
 	public function __construct() {
 		
@@ -63,6 +66,15 @@ class acau_settings {
 			
 		}		
 	
+	}
+
+	/**
+	 * Settings definitions and defaults. Built on first use, after init, so translations load at the right time (WordPress 6.7+).
+	 */
+	public function get_settings_list() {
+		if ( null !== $this->settings_list ) {
+			return $this->settings_list;
+		}
 		if ( isset( get_option( 'acau_settings' )['acau_custom_spinning_wheel'] )) {
 			$wheel_color_arg = ( get_option( 'acau_settings' )['acau_custom_spinning_wheel'] == 1 ) ? null : [ 'class' => 'hidden' ];
 		} else {
@@ -85,6 +97,7 @@ class acau_settings {
 											 'descr' => __( 'You can modify the spinning wheels further with custom CSS for .woocommerce .blockUI.blockOverlay:before,.woocommerce .loader:before', 'ajax-cart-autoupdate-for-woocommerce' ),
 											 'arg' => $wheel_color_arg ],											 
 		];
+		return $this->settings_list;
 	}
 		   
 	public function display_options() {
@@ -97,7 +110,7 @@ class acau_settings {
         add_settings_section( 'configuration_section', null, [ $this, 'print_section_info' ], $this->settings_page_name );
 		
 		// Add setting fields from 'settings_list' array based on an active tab.
-		$arr = $this->settings_list;
+		$arr = $this->get_settings_list();
 		foreach($arr as $key => $item) {
 			if ( $active_tab == $arr[$key]['tab']  ) {
 				$args = [ 'name' => $key ];
@@ -145,7 +158,7 @@ class acau_settings {
 	
 	public function acau_get_settings( $index = false ) {
 		
-		$arr = $this->settings_list;
+		$arr = $this->get_settings_list();
 		foreach($arr as $key => $item) {		
 			$defaults[$key] = $arr[$key]['val'];
 		}
@@ -191,7 +204,7 @@ class acau_settings {
 	public function sanitize( $input ) {
 		
 		$new_input = $this->acau_get_settings();
-		$arr = $this->settings_list;	
+		$arr = $this->get_settings_list();	
 		
 		foreach($arr as $key => $item) {		
 			switch ( $arr[$key]['type'] ) {
@@ -233,6 +246,7 @@ class acau_settings {
 		public function acau_print_field(array $args) {
 		 
 		$field = $args['name'];
+		$this->get_settings_list();
 	
 		switch ( $this->settings_list[$field]['type'] ) {
 			
@@ -333,13 +347,13 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 	
 	// Remove plugin prefix and dash "_" from argument keys.
 	function acau_replaceArrayKeys( $array ) {
-		$replacedKeys = str_replace('acau_', null, array_keys( $array ));
+		$replacedKeys = str_replace('acau_', '', array_keys( $array ));
 		return array_combine( $replacedKeys, $array );
 	}
-	$args = acau_replaceArrayKeys ( $acau_settings_page->acau_get_settings() );
 	
 	// Run plugin.
-	add_action( 'template_redirect', function() use ( $args ) { ajax_cart_autoupdate( $args ); });
+	// Settings are read here, after init, so translations load at the right time (WordPress 6.7+).
+	add_action( 'template_redirect', function() use ( $acau_settings_page ) { ajax_cart_autoupdate( acau_replaceArrayKeys( $acau_settings_page->acau_get_settings() ) ); });
 	function ajax_cart_autoupdate( $args ) {
 	
 		if ( ! is_cart() && ! ( is_checkout() && 1 == $args['enable_on_checkout'] ) ) return; // Only if it's a cart page or checkout page with the corresponding setting selected
